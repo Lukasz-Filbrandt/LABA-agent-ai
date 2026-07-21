@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { supabase } from "@/app/lib/supabase";
 import { formatRelativeDate } from "@/app/lib/format-relative-date";
@@ -83,6 +83,14 @@ A: Akceptujemy karty płatnicze, przelewy oraz BLIK.`,
 ];
 
 export default function UploadPage() {
+  return (
+    <Suspense fallback={null}>
+      <UploadPageInner />
+    </Suspense>
+  );
+}
+
+function UploadPageInner() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [isLoading, setIsLoading] = useState(false);

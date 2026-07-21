@@ -4,7 +4,7 @@ import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { errorHint } from "@/app/lib/error-hint";
@@ -242,6 +242,14 @@ function ToolCard({ part }: { part: ToolPart }) {
 }
 
 export default function ReactAgentPage() {
+  return (
+    <Suspense fallback={null}>
+      <ReactAgentPageInner />
+    </Suspense>
+  );
+}
+
+function ReactAgentPageInner() {
   const [input, setInput] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
