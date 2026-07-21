@@ -10,6 +10,8 @@ import {
 } from "@/app/lib/react-tools";
 import type { UIMessage } from "ai";
 
+export const maxDuration = 60;
+
 if (process.env.ENABLE_SEARCH_GROUNDING === "true") {
   console.warn(
     "⚠️ UWAGA: Search Grounding jest WŁĄCZONY. " +

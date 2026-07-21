@@ -1,6 +1,8 @@
 import { createChatStreamResponse } from "@/app/lib/chat-stream";
 import type { UIMessage } from "ai";
 
+export const maxDuration = 60;
+
 const SYSTEM_PROMPT = `Jesteś analitykiem. Twoim zadaniem jest MYŚLEĆ NA GŁOS.
 
 Gdy dostajesz pytanie, MUSISZ przejść przez te kroki:

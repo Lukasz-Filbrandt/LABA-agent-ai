@@ -1,6 +1,8 @@
 import { google } from "@ai-sdk/google";
 import { generateText } from "ai";
 
+export const maxDuration = 60;
+
 export async function POST(req: Request) {
   const {
     image,

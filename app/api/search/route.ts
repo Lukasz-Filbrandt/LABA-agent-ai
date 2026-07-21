@@ -2,6 +2,10 @@ import { createChatStreamResponse } from "@/app/lib/chat-stream";
 import { readWebPage } from "@/app/lib/tools";
 import type { UIMessage } from "ai";
 
+// Domyślny limit Vercela (10s) jest za krótki dla wieloetapowych zadań
+// (kilka wywołań narzędzi + generowanie obrazu) — 60s to maksimum planu Hobby.
+export const maxDuration = 60;
+
 if (process.env.ENABLE_SEARCH_GROUNDING === "true") {
   console.warn(
     "⚠️ UWAGA: Search Grounding jest WŁĄCZONY. " +

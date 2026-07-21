@@ -1,6 +1,8 @@
 import { google } from "@ai-sdk/google";
 import { embed } from "ai";
 
+export const maxDuration = 60;
+
 export async function POST(req: Request) {
   const { text }: { text?: string } = await req.json();
 

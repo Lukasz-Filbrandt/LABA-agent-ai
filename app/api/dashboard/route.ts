@@ -1,6 +1,8 @@
 import { fetchWeatherData, fetchExchangeRateData } from "@/app/lib/react-tools";
 import { getCurrentDateTime } from "@/app/lib/datetime";
 
+export const maxDuration = 60;
+
 const TIMEOUT_MS = 5000;
 const DEFAULT_CITY = "Warszawa";
 const DEFAULT_CURRENCIES = ["EUR", "USD"];

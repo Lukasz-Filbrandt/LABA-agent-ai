@@ -1,6 +1,8 @@
 import { createChatStreamResponse } from "@/app/lib/chat-stream";
 import type { UIMessage } from "ai";
 
+export const maxDuration = 60;
+
 const SYSTEM_PROMPT = `Jesteś agentem analizującym obrazy (Vision).
 
 ## JAK DZIAŁASZ

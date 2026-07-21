@@ -1,5 +1,7 @@
 import { generateImageFromPrompt } from "@/app/lib/image-gen";
 
+export const maxDuration = 60;
+
 export async function POST(req: Request) {
   const { prompt }: { prompt?: string } = await req.json();
 

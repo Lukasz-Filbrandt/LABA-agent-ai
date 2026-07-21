@@ -1,6 +1,8 @@
 import { createChatStreamResponse } from "@/app/lib/chat-stream";
 import type { UIMessage } from "ai";
 
+export const maxDuration = 60;
+
 const SYSTEM_PROMPT = `Jesteś asystentem który formatuje odpowiedzi według instrukcji użytkownika.
 
 Rozpoznajesz komendy formatu na początku wiadomości:

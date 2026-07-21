@@ -3,6 +3,8 @@ import { embed } from "ai";
 import { supabaseForRequest } from "@/app/lib/supabase-server";
 import { splitIntoChunks } from "@/app/lib/chunking";
 
+export const maxDuration = 60;
+
 function line(data: unknown): Uint8Array {
   return new TextEncoder().encode(`${JSON.stringify(data)}\n`);
 }
