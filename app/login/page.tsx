@@ -42,7 +42,7 @@ export default function LoginPage() {
           return;
         }
         setInfo(
-          "Konto utworzone! Jeśli projekt Supabase wymaga potwierdzenia email, sprawdź skrzynkę — w przeciwnym razie możesz się już zalogować."
+          `Wysłaliśmy link potwierdzający na adres ${email}. Kliknij go, aby aktywować konto — jeśli wiadomości nie widzisz w skrzynce odbiorczej, zajrzyj też do folderu Spam.`
         );
         setMode("login");
       }
