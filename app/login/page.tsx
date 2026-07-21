@@ -15,6 +15,13 @@ export default function LoginPage() {
   const [info, setInfo] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  const switchMode = (next: "login" | "signup") => {
+    if (next === mode) return;
+    setMode(next);
+    setError(null);
+    setInfo(null);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -58,49 +65,97 @@ export default function LoginPage() {
         onSubmit={handleSubmit}
         style={{
           width: "100%",
-          maxWidth: 360,
+          maxWidth: 380,
           display: "flex",
           flexDirection: "column",
-          gap: 12,
-          padding: 28,
-          borderRadius: 14,
+          gap: 16,
+          padding: 32,
+          borderRadius: 18,
           border: "1px solid var(--color-border)",
           background: "var(--color-surface)",
+          boxShadow: "0 20px 60px rgba(0, 0, 0, 0.35)",
         }}
       >
-        <h1 style={{ fontSize: 22, fontWeight: 700, textAlign: "center" }}>🤖 Agent AI</h1>
-        <p
-          style={{
-            fontSize: 13,
-            color: "var(--color-text-muted)",
-            textAlign: "center",
-            marginBottom: 8,
-          }}
-        >
-          {mode === "login" ? "Zaloguj się do swojego konta" : "Załóż nowe konto"}
-        </p>
+        <span className="icon-badge">⚡</span>
 
-        <input
-          type="email"
-          required
-          autoComplete="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="Email"
-          className="input-field"
-          style={{ padding: "10px 14px", borderRadius: 8, fontSize: 14 }}
-        />
-        <input
-          type="password"
-          required
-          minLength={6}
-          autoComplete={mode === "login" ? "current-password" : "new-password"}
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="Hasło (min. 6 znaków)"
-          className="input-field"
-          style={{ padding: "10px 14px", borderRadius: 8, fontSize: 14 }}
-        />
+        <div>
+          <div
+            style={{
+              fontSize: 11,
+              fontWeight: 700,
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              color: "var(--color-primary-hover)",
+              marginBottom: 6,
+            }}
+          >
+            Prywatny Agent AI
+          </div>
+          <h1 style={{ fontSize: 24, fontWeight: 700 }}>
+            {mode === "login" ? "Witaj ponownie" : "Stwórz konto"}
+          </h1>
+          <p style={{ fontSize: 13.5, color: "var(--color-text-muted)", marginTop: 6 }}>
+            {mode === "login"
+              ? "Zaloguj się, aby otworzyć swoje rozmowy i dokumenty."
+              : "Załóż konto, żeby zacząć rozmawiać z agentem."}
+          </p>
+        </div>
+
+        <div className="tab-group" role="tablist">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={mode === "login"}
+            className={`tab-btn${mode === "login" ? " active" : ""}`}
+            onClick={() => switchMode("login")}
+          >
+            Logowanie
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={mode === "signup"}
+            className={`tab-btn${mode === "signup" ? " active" : ""}`}
+            onClick={() => switchMode("signup")}
+          >
+            Rejestracja
+          </button>
+        </div>
+
+        <div>
+          <label htmlFor="email" className="field-label">
+            Email
+          </label>
+          <input
+            id="email"
+            type="email"
+            required
+            autoComplete="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="ty@example.com"
+            className="input-field"
+            style={{ width: "100%", padding: "10px 14px", borderRadius: 10, fontSize: 14 }}
+          />
+        </div>
+
+        <div>
+          <label htmlFor="password" className="field-label">
+            Hasło
+          </label>
+          <input
+            id="password"
+            type="password"
+            required
+            minLength={6}
+            autoComplete={mode === "login" ? "current-password" : "new-password"}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Minimum 6 znaków"
+            className="input-field"
+            style={{ width: "100%", padding: "10px 14px", borderRadius: 10, fontSize: 14 }}
+          />
+        </div>
 
         {error && <div style={{ fontSize: 13, color: "var(--color-danger)" }}>⚠️ {error}</div>}
         {info && (
@@ -111,22 +166,9 @@ export default function LoginPage() {
           type="submit"
           className="btn btn-primary"
           disabled={loading}
-          style={{ padding: "10px 16px", borderRadius: 8, fontSize: 14 }}
+          style={{ padding: "12px 16px", borderRadius: 10, fontSize: 14.5 }}
         >
           {loading ? "Chwileczkę..." : mode === "login" ? "Zaloguj się" : "Zarejestruj się"}
-        </button>
-
-        <button
-          type="button"
-          className="btn btn-ghost"
-          onClick={() => {
-            setMode((m) => (m === "login" ? "signup" : "login"));
-            setError(null);
-            setInfo(null);
-          }}
-          style={{ padding: "8px 16px", borderRadius: 8, fontSize: 13 }}
-        >
-          {mode === "login" ? "Nie masz konta? Zarejestruj się" : "Masz już konto? Zaloguj się"}
         </button>
       </form>
     </main>

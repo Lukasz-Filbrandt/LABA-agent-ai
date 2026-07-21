@@ -37,11 +37,11 @@ const CARD_META: Record<
 > = {
   title: { bg: "var(--gradient-primary)", border: "transparent", color: "var(--color-on-primary)" },
   summary: { bg: "var(--color-primary-light)", border: "var(--color-border)" },
-  weather: { bg: "#eff6ff", border: "#93c5fd" },
-  budget: { bg: "#fffbeb", border: "#fcd34d" },
-  dates: { bg: "#f5f3ff", border: "#c4b5fd" },
-  sights: { bg: "#f0fdfa", border: "#5eead4" },
-  checklist: { bg: "#f0fdf4", border: "#86efac" },
+  weather: { bg: "color-mix(in srgb, #3b82f6 16%, var(--color-surface))", border: "color-mix(in srgb, #3b82f6 45%, transparent)" },
+  budget: { bg: "color-mix(in srgb, #f59e0b 16%, var(--color-surface))", border: "color-mix(in srgb, #f59e0b 45%, transparent)" },
+  dates: { bg: "color-mix(in srgb, #8b5cf6 16%, var(--color-surface))", border: "color-mix(in srgb, #8b5cf6 45%, transparent)" },
+  sights: { bg: "color-mix(in srgb, #14b8a6 16%, var(--color-surface))", border: "color-mix(in srgb, #14b8a6 45%, transparent)" },
+  checklist: { bg: "color-mix(in srgb, #22c55e 16%, var(--color-surface))", border: "color-mix(in srgb, #22c55e 45%, transparent)" },
   other: { bg: "var(--color-surface)", border: "var(--color-border)" },
 };
 
