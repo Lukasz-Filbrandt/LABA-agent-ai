@@ -385,25 +385,45 @@ export default function ChatInterface({
           fontSize: 13,
         }}
       >
-        <button
-          type="button"
-          className="btn btn-toggle"
-          onClick={() => setContextOpen((v) => !v)}
-          style={{
-            width: "100%",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            padding: "10px 14px",
-            borderRadius: 8,
-            fontSize: 13,
-          }}
-        >
-          <span>🧠 Kontekst rozmowy</span>
-          <span style={{ color: "var(--color-text-muted)" }}>
-            {contextOpen ? "▲" : "▼"}
-          </span>
-        </button>
+        <div style={{ display: "flex", alignItems: "center" }}>
+          <button
+            type="button"
+            className="btn btn-toggle"
+            onClick={() => setContextOpen((v) => !v)}
+            style={{
+              flex: 1,
+              minWidth: 0,
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              padding: "10px 14px",
+              borderRadius: 8,
+              fontSize: 13,
+            }}
+          >
+            <span>🧠 Kontekst rozmowy</span>
+            <span style={{ color: "var(--color-text-muted)" }}>
+              {contextOpen ? "▲" : "▼"}
+            </span>
+          </button>
+          <button
+            type="button"
+            className="btn btn-ghost"
+            onClick={handleNewChat}
+            disabled={messages.length === 0}
+            title="Zacznij nową rozmowę"
+            style={{
+              flexShrink: 0,
+              margin: "6px 8px 6px 0",
+              padding: "6px 12px",
+              borderRadius: 8,
+              fontSize: 12,
+              whiteSpace: "nowrap",
+            }}
+          >
+            ✨ Nowa rozmowa
+          </button>
+        </div>
         {contextOpen && (
           <div
             style={{
@@ -431,19 +451,6 @@ export default function ChatInterface({
               }}
             >
               {copied ? "Skopiowano!" : "📋 Eksportuj rozmowę"}
-            </button>
-            <button
-              type="button"
-              className="btn btn-danger-ghost"
-              onClick={handleNewChat}
-              disabled={messages.length === 0}
-              style={{
-                padding: "6px 12px",
-                borderRadius: 8,
-                fontSize: 12,
-              }}
-            >
-              🗑 Nowa rozmowa
             </button>
           </div>
         )}
