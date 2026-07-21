@@ -4,6 +4,7 @@ import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { supabase } from "@/app/lib/supabase";
 import { formatRelativeDate } from "@/app/lib/format-relative-date";
+import { useAuth } from "@/app/lib/auth-context";
 
 type Progress = { current: number; total: number };
 
@@ -91,6 +92,7 @@ export default function UploadPage() {
 }
 
 function UploadPageInner() {
+  const { user, getAccessToken } = useAuth();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -112,9 +114,11 @@ function UploadPageInner() {
   const scrolledToHighlightRef = useRef(false);
 
   const loadDocuments = useCallback(async () => {
+    if (!user) return;
     const { data, error: fetchError } = await supabase
       .from("documents")
       .select("id, title, content, metadata, created_at")
+      .eq("user_id", user.id)
       .order("created_at", { ascending: true });
 
     if (fetchError || !data) {
@@ -142,7 +146,7 @@ function UploadPageInner() {
         addedAt: v.addedAt,
       }))
     );
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     void loadDocuments();
@@ -186,9 +190,13 @@ function UploadPageInner() {
     setProgress(null);
 
     try {
+      const token = await getAccessToken();
       const res = await fetch("/api/upload-knowledge", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({ title: title.trim(), content: content.trim() }),
       });
 
@@ -240,9 +248,14 @@ function UploadPageInner() {
     );
     if (!confirmed) return;
 
+    if (!user) return;
     setDeletingTitle(docTitle);
     try {
-      const { error: deleteError } = await supabase.from("documents").delete().eq("title", docTitle);
+      const { error: deleteError } = await supabase
+        .from("documents")
+        .delete()
+        .eq("title", docTitle)
+        .eq("user_id", user.id);
       if (deleteError) throw deleteError;
       setDocuments((prev) => (prev ?? []).filter((d) => d.title !== docTitle));
     } catch (err) {

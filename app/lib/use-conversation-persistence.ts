@@ -19,8 +19,8 @@ function titleFromText(text: string) {
   return trimmed.length > 50 ? `${trimmed.slice(0, 50)}...` : trimmed;
 }
 
-/** Zapisuje i wczytuje rozmowę z Supabase (tabele conversations/messages) — patrz W2_HISTORIA.md */
-export function useConversationPersistence(enabled: boolean) {
+/** Zapisuje i wczytuje rozmowę z Supabase (tabele conversations/messages), izolowane per user_id — patrz W2_HISTORIA.md/W3_LOGIN_PRYWATNOSC.md */
+export function useConversationPersistence(enabled: boolean, userId: string | null) {
   const conversationIdRef = useRef<string | null>(null);
   const [isLoadingHistory, setIsLoadingHistory] = useState(enabled);
 
@@ -30,7 +30,7 @@ export function useConversationPersistence(enabled: boolean) {
    */
   const loadConversation = useCallback(
     async (conversationId?: string): Promise<UIMessage[]> => {
-      if (!enabled) return [];
+      if (!enabled || !userId) return [];
       try {
         let targetId = conversationId ?? null;
 
@@ -38,6 +38,7 @@ export function useConversationPersistence(enabled: boolean) {
           const { data: conversation } = await supabase
             .from("conversations")
             .select("id")
+            .eq("user_id", userId)
             .order("updated_at", { ascending: false })
             .limit(1)
             .maybeSingle();
@@ -61,18 +62,18 @@ export function useConversationPersistence(enabled: boolean) {
         setIsLoadingHistory(false);
       }
     },
-    [enabled]
+    [enabled, userId]
   );
 
   const saveUserMessage = useCallback(
     async (text: string) => {
-      if (!enabled) return;
+      if (!enabled || !userId) return;
       try {
         let conversationId = conversationIdRef.current;
         if (!conversationId) {
           const { data, error } = await supabase
             .from("conversations")
-            .insert({ title: titleFromText(text) })
+            .insert({ title: titleFromText(text), user_id: userId })
             .select("id")
             .single();
           if (error || !data) throw error;
@@ -91,7 +92,7 @@ export function useConversationPersistence(enabled: boolean) {
         console.error("Nie udało się zapisać wiadomości użytkownika:", err);
       }
     },
-    [enabled]
+    [enabled, userId]
   );
 
   const saveAssistantMessage = useCallback(

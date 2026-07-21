@@ -1,11 +1,15 @@
 import { tool } from "ai";
 import { z } from "zod";
-import { supabase } from "@/app/lib/supabase";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 export type CalendarEvent = { id: string; date: string; title: string };
 
-/** Narzędzia pozwalające agentowi zapamiętać dane o użytkowniku w user_profiles (patrz W3_IMIE.md) */
-export function createProfileTools(userId: string | null) {
+/**
+ * Narzędzia pozwalające agentowi zapamiętać dane o użytkowniku w user_profiles (patrz W3_IMIE.md).
+ * `supabase` musi być klientem autoryzowanym tokenem tego usera (patrz W3_LOGIN_PRYWATNOSC.md /
+ * app/lib/supabase-server.ts) — inaczej RLS zablokuje odczyt/zapis.
+ */
+export function createProfileTools(userId: string | null, supabase: SupabaseClient) {
   // Agent potrafi wywołać kilka narzędzi zapisujących w JEDNYM kroku (np. saveUserPreference dwa
   // razy naraz dla różnych kluczy) — AI SDK wykonuje takie wywołania równolegle. Bez serializacji
   // każde z nich odczytuje ten sam stan PRZED zapisem drugiego, więc drugi zapis nadpisuje pierwszy

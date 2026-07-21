@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useAuth } from "@/app/lib/auth-context";
 
 const DASHBOARD_LINK = { href: "/", label: "Dashboard", icon: "🏠" };
 
@@ -23,7 +24,14 @@ const LINKS = [
 
 export default function NavBar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { user, signOut } = useAuth();
   const [open, setOpen] = useState(false);
+
+  const handleLogout = async () => {
+    await signOut();
+    router.replace("/login");
+  };
 
   // Zamknij menu mobilne po każdej nawigacji
   useEffect(() => {
@@ -67,6 +75,31 @@ export default function NavBar() {
         {renderLink(DASHBOARD_LINK)}
         <div style={{ height: 1, background: "var(--color-border)", margin: "10px 6px" }} />
         {LINKS.map(renderLink)}
+
+        {user && (
+          <div style={{ marginTop: 16, paddingTop: 12, borderTop: "1px solid var(--color-border)" }}>
+            <div
+              style={{
+                fontSize: 11,
+                color: "var(--color-text-muted)",
+                padding: "0 6px 8px",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {user.email}
+            </div>
+            <button
+              type="button"
+              className="btn btn-danger-ghost"
+              onClick={handleLogout}
+              style={{ width: "100%", padding: "8px 12px", borderRadius: 8, fontSize: 13 }}
+            >
+              🚪 Wyloguj
+            </button>
+          </div>
+        )}
       </nav>
     </>
   );

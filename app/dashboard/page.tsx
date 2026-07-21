@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/app/lib/supabase";
 import { useUserProfile } from "@/app/lib/use-user-profile";
+import { useAuth } from "@/app/lib/auth-context";
 import type { CalendarEvent } from "@/app/lib/user-profile-tools";
 
 type WeatherData = {
@@ -509,19 +510,21 @@ export default function DashboardPage() {
     setLoading(false);
   }, [fetchSections]);
 
-  // Kalendarz — powiązany z tym samym user_profiles.id co spersonalizowany czat (patrz use-user-profile.ts),
-  // więc wydarzenia dodane tu i przez chatbota (narzędzie saveEvent) współdzielą ten sam profil.
-  const { loadProfile, getUserId } = useUserProfile(true);
+  // Kalendarz — powiązany z tym samym user_profiles.id (= auth.uid()) co spersonalizowany czat
+  // (patrz use-user-profile.ts), więc wydarzenia dodane tu i przez chatbota (narzędzie saveEvent)
+  // współdzielą ten sam profil.
+  const { user } = useAuth();
+  const userId = user?.id ?? null;
+  const { loadProfile } = useUserProfile(true);
   const [events, setEvents] = useState<CalendarEvent[] | null>(null);
   const [eventsLoading, setEventsLoading] = useState(true);
 
   const loadEvents = useCallback(async () => {
-    await loadProfile();
-    const userId = getUserId();
     if (!userId) {
       setEventsLoading(false);
       return;
     }
+    await loadProfile(userId);
     const { data } = await supabase
       .from("user_profiles")
       .select("events")
@@ -529,28 +532,26 @@ export default function DashboardPage() {
       .maybeSingle();
     setEvents((data?.events as CalendarEvent[] | null) ?? []);
     setEventsLoading(false);
-  }, [loadProfile, getUserId]);
+  }, [loadProfile, userId]);
 
   const addEvent = useCallback(
     async (date: string, title: string) => {
-      const userId = getUserId();
       if (!userId) return;
       const next = [...(events ?? []), { id: crypto.randomUUID(), date, title }];
       setEvents(next);
       await supabase.from("user_profiles").update({ events: next }).eq("id", userId);
     },
-    [events, getUserId]
+    [events, userId]
   );
 
   const removeEvent = useCallback(
     async (id: string) => {
-      const userId = getUserId();
       if (!userId) return;
       const next = (events ?? []).filter((e) => e.id !== id);
       setEvents(next);
       await supabase.from("user_profiles").update({ events: next }).eq("id", userId);
     },
-    [events, getUserId]
+    [events, userId]
   );
 
   const handleRefresh = useCallback(async () => {

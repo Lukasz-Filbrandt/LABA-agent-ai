@@ -11,6 +11,7 @@ import { errorHint } from "@/app/lib/error-hint";
 import { computeDiagnostics, isToolPart } from "@/app/lib/diagnostics";
 import { useMessageTimer } from "@/app/lib/use-message-timer";
 import DiagnosticsPanel from "@/app/components/DiagnosticsPanel";
+import { useAuth } from "@/app/lib/auth-context";
 
 const MAX_STEPS = 5;
 // Techniczny limit z app/api/react/route.ts (stopWhen) — zasila panel Diagnostyka
@@ -257,8 +258,17 @@ function ReactAgentPageInner() {
   const initialPromptSentRef = useRef(false);
 
   const timer = useMessageTimer();
+  const { getAccessToken } = useAuth();
 
-  const transportRef = useRef(new DefaultChatTransport({ api: "/api/react" }));
+  const transportRef = useRef(
+    new DefaultChatTransport({
+      api: "/api/react",
+      headers: async (): Promise<Record<string, string>> => {
+        const token = await getAccessToken();
+        return token ? { Authorization: `Bearer ${token}` } : {};
+      },
+    })
+  );
   const { messages, sendMessage, status, setMessages, error, regenerate } = useChat({
     transport: transportRef.current,
     onFinish: ({ message }) => timer.finish(message.id),

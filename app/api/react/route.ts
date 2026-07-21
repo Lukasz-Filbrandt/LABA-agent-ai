@@ -2,7 +2,8 @@ import { createChatStreamResponse } from "@/app/lib/chat-stream";
 import { readWebPage } from "@/app/lib/tools";
 import { calculator } from "@/app/lib/calculator";
 import { currentDateTime } from "@/app/lib/datetime";
-import { searchKnowledge } from "@/app/lib/knowledge-tools";
+import { createKnowledgeTools } from "@/app/lib/knowledge-tools";
+import { supabaseForRequest } from "@/app/lib/supabase-server";
 import {
   getWeather,
   getExchangeRate,
@@ -126,6 +127,9 @@ export async function POST(req: Request) {
     messages,
     model = "flash",
   }: { messages: UIMessage[]; model?: string } = await req.json();
+
+  const { supabase } = await supabaseForRequest(req);
+  const { searchKnowledge } = createKnowledgeTools(supabase);
 
   return createChatStreamResponse(messages, model, SYSTEM_PROMPT, {
     enableSearch: process.env.ENABLE_SEARCH_GROUNDING === "true",

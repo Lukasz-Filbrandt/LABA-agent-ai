@@ -1,7 +1,8 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { createChatStreamResponse } from "@/app/lib/chat-stream";
 import { readWebPage } from "@/app/lib/tools";
 import { createProfileTools, type CalendarEvent } from "@/app/lib/user-profile-tools";
-import { supabase } from "@/app/lib/supabase";
+import { supabaseForRequest } from "@/app/lib/supabase-server";
 import type { UIMessage } from "ai";
 
 if (process.env.ENABLE_SEARCH_GROUNDING === "true") {
@@ -87,7 +88,7 @@ function preferencesContext(preferences: Record<string, string> | null): string 
   return `\n\nZnane preferencje/dane użytkownika (zapisane w poprzednich rozmowach):\n${list}`;
 }
 
-async function buildPersonalization(userId: string | undefined): Promise<string> {
+async function buildPersonalization(userId: string | undefined, supabase: SupabaseClient): Promise<string> {
   if (!userId) return "";
 
   const { data: profile } = await supabase
@@ -121,11 +122,16 @@ export async function POST(req: Request) {
   const {
     messages,
     model = "flash",
-    userId,
-  }: { messages: UIMessage[]; model?: string; userId?: string } = await req.json();
+  }: { messages: UIMessage[]; model?: string } = await req.json();
 
-  const personalization = await buildPersonalization(userId);
-  const { saveUserName, saveUserPreference, saveEvent, getEvents } = createProfileTools(userId ?? null);
+  const { supabase, user } = await supabaseForRequest(req);
+  const userId = user?.id;
+
+  const personalization = await buildPersonalization(userId, supabase);
+  const { saveUserName, saveUserPreference, saveEvent, getEvents } = createProfileTools(
+    userId ?? null,
+    supabase
+  );
 
   return createChatStreamResponse(messages, model, SYSTEM_PROMPT + todayContext() + personalization, {
     enableSearch: process.env.ENABLE_SEARCH_GROUNDING === "true",

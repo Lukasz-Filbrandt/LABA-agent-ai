@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import NavBar from "@/app/components/NavBar";
+import { AuthProvider } from "@/app/lib/auth-context";
+import AuthGate from "@/app/components/AuthGate";
 
 export const metadata: Metadata = {
   title: "Agent AI — Centrum dowodzenia",
@@ -15,10 +16,9 @@ export default function RootLayout({
   return (
     <html lang="pl">
       <body>
-        <div className="app-shell">
-          <NavBar />
-          <div className="app-content">{children}</div>
-        </div>
+        <AuthProvider>
+          <AuthGate>{children}</AuthGate>
+        </AuthProvider>
       </body>
     </html>
   );

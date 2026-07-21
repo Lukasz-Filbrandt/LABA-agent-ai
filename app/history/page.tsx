@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/app/lib/supabase";
 import { formatRelativeDate } from "@/app/lib/format-relative-date";
+import { useAuth } from "@/app/lib/auth-context";
 
 type ConversationSummary = {
   id: string;
@@ -19,14 +20,17 @@ function truncate(text: string, max: number) {
 }
 
 export default function HistoryPage() {
+  const { user } = useAuth();
   const [conversations, setConversations] = useState<ConversationSummary[] | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
 
   const loadConversations = useCallback(async () => {
+    if (!user) return;
     const { data: rows, error } = await supabase
       .from("conversations")
       .select("id, title, updated_at")
+      .eq("user_id", user.id)
       .order("updated_at", { ascending: false });
 
     if (error || !rows) {
@@ -66,7 +70,7 @@ export default function HistoryPage() {
         };
       })
     );
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     void loadConversations();

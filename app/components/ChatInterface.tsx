@@ -9,6 +9,7 @@ import { useImageAttachment } from "@/app/lib/use-image-attachment";
 import { useConversationPersistence } from "@/app/lib/use-conversation-persistence";
 import { useUserProfile } from "@/app/lib/use-user-profile";
 import { errorHint } from "@/app/lib/error-hint";
+import { useAuth } from "@/app/lib/auth-context";
 
 type AiModel = "flash" | "pro";
 
@@ -65,6 +66,9 @@ export default function ChatInterface({
   personalize = false,
   continueConversationId,
 }: ChatInterfaceProps) {
+  const { user, getAccessToken } = useAuth();
+  const userId = user?.id ?? null;
+
   const [model, setModel] = useState<AiModel>("flash");
   const modelRef = useRef<AiModel>(model);
   modelRef.current = model;
@@ -75,7 +79,14 @@ export default function ChatInterface({
   );
 
   const transportRef = useRef(
-    new DefaultChatTransport({ api: apiEndpoint })
+    new DefaultChatTransport({
+      api: apiEndpoint,
+      // Token dołączony do żądania — serwer respektuje RLS jako ten sam user (patrz W3_LOGIN_PRYWATNOSC.md)
+      headers: async (): Promise<Record<string, string>> => {
+        const token = await getAccessToken();
+        return token ? { Authorization: `Bearer ${token}` } : {};
+      },
+    })
   );
 
   const {
@@ -84,9 +95,9 @@ export default function ChatInterface({
     saveUserMessage,
     saveAssistantMessage,
     startNewConversation,
-  } = useConversationPersistence(persist);
+  } = useConversationPersistence(persist, userId);
 
-  const { isLoadingProfile, loadProfile, getUserId } = useUserProfile(personalize);
+  const { isLoadingProfile, loadProfile } = useUserProfile(personalize);
 
   // Tekst całej wiadomości — zdefiniowane wcześnie, bo onFinish poniżej tego potrzebuje
   const extractText = (message: { parts: { type: string; text?: string }[] }) =>
@@ -110,12 +121,12 @@ export default function ChatInterface({
     });
 
   useEffect(() => {
-    if (!persist && !personalize) return;
+    if ((!persist && !personalize) || !userId) return;
     let cancelled = false;
     (async () => {
       const [history, name] = await Promise.all([
         persist ? loadConversation(continueConversationId) : Promise.resolve([]),
-        personalize ? loadProfile() : Promise.resolve(null),
+        personalize ? loadProfile(userId) : Promise.resolve(null),
       ]);
       if (cancelled) return;
 
@@ -132,7 +143,7 @@ export default function ChatInterface({
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [persist, personalize, continueConversationId]);
+  }, [persist, personalize, continueConversationId, userId]);
 
   const [input, setInput] = useState("");
   const [contextOpen, setContextOpen] = useState(false);
@@ -224,7 +235,7 @@ export default function ChatInterface({
             ]
           : undefined,
       },
-      { body: { model, userId: personalize ? getUserId() ?? undefined : undefined } }
+      { body: { model } }
     );
     clearImage();
   };

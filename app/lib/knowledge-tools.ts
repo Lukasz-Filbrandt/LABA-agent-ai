@@ -2,7 +2,7 @@ import { tool } from "ai";
 import { z } from "zod";
 import { google } from "@ai-sdk/google";
 import { embed } from "ai";
-import { supabase } from "@/app/lib/supabase";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 const MATCH_THRESHOLD = 0.5;
 const MATCH_COUNT = 5;
@@ -17,8 +17,11 @@ type MatchRow = {
 
 /** Wyszukiwanie w bazie wiedzy firmy (RAG) — patrz W3_SEARCH.md/W4_CYTOWANIE.md. Ten sam model i wymiar
  * wektora co /api/upload-knowledge (W2_UPLOAD.md), inaczej porównanie z embeddingami w tabeli documents
- * nie ma sensu. Dokłada added_at i source_documents, żeby agent miał czym cytować źródło odpowiedzi. */
-export const searchKnowledge = tool({
+ * nie ma sensu. Dokłada added_at i source_documents, żeby agent miał czym cytować źródło odpowiedzi.
+ * `supabase` musi być klientem autoryzowanym tokenem usera (patrz app/lib/supabase-server.ts) — RLS na
+ * documents ogranicza wyniki match_documents do dokumentów właściciela (W3_LOGIN_PRYWATNOSC.md). */
+export function createKnowledgeTools(supabase: SupabaseClient) {
+  const searchKnowledge = tool({
   description:
     "Wyszukuje informacje w bazie wiedzy firmy (cenniki, FAQ, regulaminy, oferty). " +
     "Używaj ZAWSZE gdy użytkownik pyta o: ceny, pakiety, koszty; procedury, regulaminy, warunki; " +
@@ -78,4 +81,7 @@ export const searchKnowledge = tool({
       return { results: [], total_found: 0, message: `Błąd wyszukiwania: ${message}`, source_documents: [] };
     }
   },
-});
+  });
+
+  return { searchKnowledge };
+}

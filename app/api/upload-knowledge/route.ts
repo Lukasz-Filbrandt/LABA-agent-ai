@@ -1,6 +1,6 @@
 import { google } from "@ai-sdk/google";
 import { embed } from "ai";
-import { supabase } from "@/app/lib/supabase";
+import { supabaseForRequest } from "@/app/lib/supabase-server";
 import { splitIntoChunks } from "@/app/lib/chunking";
 
 function line(data: unknown): Uint8Array {
@@ -12,6 +12,11 @@ export async function POST(req: Request) {
 
   if (!title?.trim() || !content?.trim()) {
     return Response.json({ error: "Podaj tytuł i treść dokumentu." }, { status: 400 });
+  }
+
+  const { supabase, user } = await supabaseForRequest(req);
+  if (!user) {
+    return Response.json({ error: "Musisz być zalogowany." }, { status: 401 });
   }
 
   const chunks = splitIntoChunks(content);
@@ -41,6 +46,7 @@ export async function POST(req: Request) {
             content: chunks[i],
             embedding,
             metadata: { source: trimmedTitle, chunk_index: i, total_chunks: chunks.length },
+            user_id: user.id,
           });
           if (error) throw new Error(error.message);
 
