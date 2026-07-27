@@ -21,6 +21,7 @@ const LINKS = [
   { href: "/fewshot", label: "Słownik", icon: "📚" },
   { href: "/upload", label: "Baza wiedzy", icon: "🗂️" },
   { href: "/email-triage", label: "E-mail Triage", icon: "📧" },
+  { href: "/report", label: "Raporty", icon: "📊" },
 ];
 
 export default function NavBar() {
