@@ -20,6 +20,7 @@ const LINKS = [
   { href: "/format", label: "Formater", icon: "📐" },
   { href: "/fewshot", label: "Słownik", icon: "📚" },
   { href: "/upload", label: "Baza wiedzy", icon: "🗂️" },
+  { href: "/email-triage", label: "E-mail Triage", icon: "📧" },
 ];
 
 export default function NavBar() {
