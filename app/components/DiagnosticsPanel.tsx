@@ -1,4 +1,5 @@
 import type { Diagnostics } from "@/app/lib/diagnostics";
+import { errorHint } from "@/app/lib/error-hint";
 
 const STATUS_META: Record<Diagnostics["status"], { emoji: string; label: string }> = {
   loading: { emoji: "⏳", label: "W trakcie..." },
@@ -78,7 +79,7 @@ export default function DiagnosticsPanel({
           {diagnostics.errors.map((e, i) => (
             <div key={i} style={{ color: "var(--color-danger)" }}>
               🔴 {e.name}
-              {e.input != null ? `(${JSON.stringify(e.input).slice(0, 60)})` : "()"} — {e.message}
+              {e.input != null ? `(${JSON.stringify(e.input).slice(0, 60)})` : "()"} — {errorHint(e.message)}
             </div>
           ))}
         </div>
