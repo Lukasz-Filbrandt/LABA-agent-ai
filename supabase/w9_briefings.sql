@@ -8,3 +8,13 @@ create table if not exists briefings (
   date date not null,
   user_id uuid references auth.users(id) on delete cascade
 );
+
+-- Strona /briefings czyta tabelę z przeglądarki kluczem publicznym, więc bez polityki
+-- SELECT lista jest zawsze pusta (RLS filtruje po cichu, bez błędu).
+-- Briefingi są wspólne, nie per user: cron zapisuje je z user_id = null, więc polityka
+-- nie może porównywać auth.uid() z user_id — odcięłaby wszystkie wpisy z crona.
+-- Zapis nadal idzie wyłącznie kluczem serwisowym, który omija RLS.
+alter table briefings enable row level security;
+
+create policy "Authenticated users read briefings" on briefings
+  for select to authenticated using (true);

@@ -10,6 +10,7 @@ const DASHBOARD_LINK = { href: "/", label: "Dashboard", icon: "🏠" };
 const LINKS = [
   { href: "/chat", label: "Chat", icon: "💬" },
   { href: "/history", label: "Historia", icon: "📜" },
+  { href: "/briefings", label: "Briefingi", icon: "📰" },
   { href: "/think", label: "Myślenie", icon: "🧠" },
   { href: "/search", label: "Szukaj", icon: "🌐" },
   { href: "/generate", label: "Grafiki", icon: "🎨" },
