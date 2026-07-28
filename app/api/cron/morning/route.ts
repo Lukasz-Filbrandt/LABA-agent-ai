@@ -40,8 +40,14 @@ function supabaseServiceClient() {
 }
 
 export async function GET(request: Request) {
-  const authHeader = request.headers.get("authorization");
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  const secret = process.env.CRON_SECRET;
+  if (!secret) {
+    return Response.json(
+      { success: false, error: "CRON_SECRET nie jest skonfigurowany." },
+      { status: 500 }
+    );
+  }
+  if (request.headers.get("authorization") !== `Bearer ${secret}`) {
     return new Response("Unauthorized", { status: 401 });
   }
 

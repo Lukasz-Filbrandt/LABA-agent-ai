@@ -49,6 +49,19 @@ function supabaseServiceClient() {
 }
 
 export async function POST(request: Request) {
+  // Endpoint jest publiczny, a każde wywołanie kosztuje tokeny AI i zapisuje wiersz
+  // w bazie — bez sekretu ktokolwiek mógłby go spamować.
+  const secret = process.env.WEBHOOK_SECRET;
+  if (!secret) {
+    return Response.json(
+      { success: false, error: "WEBHOOK_SECRET nie jest skonfigurowany." },
+      { status: 500 }
+    );
+  }
+  if (request.headers.get("authorization") !== `Bearer ${secret}`) {
+    return new Response("Unauthorized", { status: 401 });
+  }
+
   let json: unknown;
   try {
     json = await request.json();
