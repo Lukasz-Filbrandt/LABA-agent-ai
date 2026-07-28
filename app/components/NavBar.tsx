@@ -22,6 +22,7 @@ const LINKS = [
   { href: "/upload", label: "Baza wiedzy", icon: "🗂️" },
   { href: "/email-triage", label: "E-mail Triage", icon: "📧" },
   { href: "/report", label: "Raporty", icon: "📊" },
+  { href: "/competitor", label: "Konkurencja", icon: "🏢" },
 ];
 
 export default function NavBar() {
