@@ -58,7 +58,19 @@ Autor: Agent AI
 - Raport powinien mieć 500-1000 słów
 - Nie wymyślaj statystyk — szukaj!
 - Zanim napiszesz raport, wykonaj przynajmniej 2-3 wyszukiwania — nie pisz raportu bez zebrania danych
-- Odpowiedz WYŁĄCZNIE gotowym raportem w formacie powyżej — bez wstępu, bez komentarzy przed lub po`;
+- Odpowiedz WYŁĄCZNIE gotowym raportem w formacie powyżej — bez wstępu, bez komentarzy przed lub po
+
+## BUDŻET WYWOŁAŃ I OBSŁUGA BŁĘDÓW:
+- Masz maksymalnie 8 kroków (wywołań narzędzi) zanim MUSISZ napisać raport — licz je w głowie
+- Jeśli jedno narzędzie zawiedzie 2 razy z rzędu, NIE próbuj go trzeci raz z podobnym zapytaniem —
+  przejdź do innego narzędzia albo innej frazy wyszukiwania
+- Gdy zbliżasz się do limitu kroków (6-7 wykorzystanych), PRZERWIJ zbieranie danych i od razu napisz
+  raport na podstawie tego, co już masz
+- Raport MUSISZ napisać ZAWSZE, nawet jeśli część wyszukiwań zawiodła — w sekcji "Kluczowe dane
+  i fakty" jasno zaznacz, których danych nie udało się zweryfikować wyszukiwaniem, i oprzyj tę część
+  na ogólnej wiedzy, wyraźnie to opisując (np. "na podstawie ogólnej wiedzy, niepotwierdzone
+  wyszukiwaniem")
+- Pusta odpowiedź jest niedopuszczalna — niepełny raport z zastrzeżeniami jest zawsze lepszy niż brak raportu`;
 
 export async function POST(req: Request) {
   const {

@@ -12,13 +12,14 @@ type FetchResult<T> = { ok: true; data: T } | { ok: false; error: string; status
  */
 async function safeFetchJson<T = unknown>(
   url: string,
-  timeoutMs = TIMEOUT_MS
+  timeoutMs = TIMEOUT_MS,
+  headers?: Record<string, string>
 ): Promise<FetchResult<T>> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
-    const response = await fetch(url, { signal: controller.signal });
+    const response = await fetch(url, { signal: controller.signal, headers });
     if (!response.ok) {
       return {
         ok: false,
@@ -280,9 +281,18 @@ export const searchWikipedia = tool({
       return { error: "Podaj frazę do wyszukania" };
     }
     const language = lang || "pl";
+    // Wikipedia bez zgodnego z jej polityką User-Agent odrzuca/throttluje żądania
+    // z adresów IP dostawców chmurowych (np. Vercel) kodem 429 — patrz
+    // https://meta.wikimedia.org/wiki/User-Agent_policy
+    const wikiHeaders = {
+      "User-Agent":
+        "AgentAI-Workshop/1.0 (https://github.com/Lukasz-Filbrandt/LABA-agent-ai)",
+    };
 
     const search = await safeFetchJson<WikiSearchResponse>(
-      `https://${language}.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&format=json&origin=*`
+      `https://${language}.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&format=json&origin=*`,
+      TIMEOUT_MS,
+      wikiHeaders
     );
     if (!search.ok) return { error: search.error };
 
@@ -292,7 +302,9 @@ export const searchWikipedia = tool({
     }
 
     const summary = await safeFetchJson<WikiSummaryResponse>(
-      `https://${language}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`
+      `https://${language}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`,
+      TIMEOUT_MS,
+      wikiHeaders
     );
     if (!summary.ok) return { error: summary.error };
 

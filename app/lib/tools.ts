@@ -34,7 +34,15 @@ export const readWebPage = tool({
     const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
     try {
-      const response = await fetch(url, { signal: controller.signal });
+      // Bez identyfikującego się User-Agent wiele serwerów/CDN-ów blokuje żądania
+      // z adresów IP dostawców chmurowych (np. Vercel) kodem 403/429.
+      const response = await fetch(url, {
+        signal: controller.signal,
+        headers: {
+          "User-Agent":
+            "Mozilla/5.0 (compatible; AgentAI-Workshop/1.0; +https://github.com/Lukasz-Filbrandt/LABA-agent-ai)",
+        },
+      });
 
       if (!response.ok) {
         return `Błąd: API zwróciło błąd ${response.status}. Sprawdź adres URL.`;
