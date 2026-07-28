@@ -23,6 +23,7 @@ const LINKS = [
   { href: "/email-triage", label: "E-mail Triage", icon: "📧" },
   { href: "/report", label: "Raporty", icon: "📊" },
   { href: "/competitor", label: "Konkurencja", icon: "🏢" },
+  { href: "/cv-maker", label: "CV Maker", icon: "🧾" },
 ];
 
 export default function NavBar() {
