@@ -29,6 +29,20 @@
   --color-danger-border: rgba(251, 113, 133, 0.35);
 }
 
+/* Jasny motyw — przełącznik 🌙/☀️ w nawigacji, wybór zapisany w localStorage (patrz W4_POLISH.md).
+   Nadpisuje tylko neutralne tokeny (tło/powierzchnia/obramowanie/tekst) — marka (primary/danger)
+   zostaje ta sama w obu motywach. --color-text-muted nie trzeba nadpisywać: color-mix() powyżej
+   przelicza się automatycznie na bazie aktualnych --color-text/--color-bg.
+   Uwaga: "control center" (dashboard, landing page) zostaje zawsze ciemny — to świadomy wybór
+   projektowy z W1/W2, nie luka w motywie. */
+:root[data-theme="light"] {
+  --color-bg: #f8fafc;
+  --color-surface: #ffffff;
+  --color-border: rgba(15, 23, 42, 0.1);
+  --color-text: #0f172a;
+  --color-primary-light: rgba(124, 58, 237, 0.1);
+}
+
 html,
 body {
   background: radial-gradient(1200px 640px at 50% -12%, color-mix(in srgb, var(--color-primary) 20%, transparent), transparent 60%),

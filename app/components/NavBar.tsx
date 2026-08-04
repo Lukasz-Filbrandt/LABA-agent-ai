@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/app/lib/auth-context";
+import ThemeToggle from "@/app/components/ThemeToggle";
 
 const DASHBOARD_LINK = { href: "/", label: "Dashboard", icon: "🏠" };
 
@@ -70,25 +71,38 @@ export default function NavBar() {
           </span>
           Agent AI
         </span>
-        <button
-          type="button"
-          className="hamburger-btn"
-          onClick={() => setOpen((v) => !v)}
-          aria-label={open ? "Zamknij menu" : "Otwórz menu"}
-        >
-          {open ? "✕" : "☰"}
-        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <ThemeToggle />
+          <button
+            type="button"
+            className="hamburger-btn"
+            onClick={() => setOpen((v) => !v)}
+            aria-label={open ? "Zamknij menu" : "Otwórz menu"}
+          >
+            {open ? "✕" : "☰"}
+          </button>
+        </div>
       </div>
 
       {open && <div className="sidebar-overlay" onClick={() => setOpen(false)} />}
 
       <nav className={`sidebar${open ? " open" : ""}`}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "4px 10px 22px" }}>
-          <span className="icon-badge">⚡</span>
-          <div style={{ lineHeight: 1.25 }}>
-            <div style={{ fontWeight: 700, fontSize: 14 }}>Agent AI</div>
-            <div style={{ fontSize: 11, color: "var(--color-text-muted)" }}>Centrum dowodzenia</div>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "4px 10px 22px",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <span className="icon-badge">⚡</span>
+            <div style={{ lineHeight: 1.25 }}>
+              <div style={{ fontWeight: 700, fontSize: 14 }}>Agent AI</div>
+              <div style={{ fontSize: 11, color: "var(--color-text-muted)" }}>Centrum dowodzenia</div>
+            </div>
           </div>
+          <ThemeToggle />
         </div>
         {renderLink(DASHBOARD_LINK)}
         <div style={{ height: 1, background: "var(--color-border)", margin: "10px 6px" }} />
