@@ -1,4 +1,5 @@
 import { google } from "@ai-sdk/google";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   streamText,
   convertToModelMessages,
@@ -11,6 +12,7 @@ import {
   type ToolSet,
 } from "ai";
 import { filterModelOutput } from "@/app/lib/output-guard";
+import { logApiUsage } from "@/app/lib/token-budget";
 
 // Wybór modelu z interfejsu — najtańszy/darmowy model dla wszystkich trybów (patrz W0_KLUCZ_API.md)
 const MODEL_CHAINS: Record<string, string[]> = {
@@ -71,6 +73,16 @@ export type ChatStreamOptions = {
    * komunikatem. Domyślnie wyłączone, żeby nie zmieniać UX pozostałych endpointów.
    */
   filterOutput?: boolean;
+  /**
+   * Gdy podane, po zakończeniu generowania zapisuje zużycie tokenów (z pola `totalUsage` streamu)
+   * do tabeli api_usage — patrz W3_BUDZET.md / app/lib/token-budget.ts. Sprawdzenie dziennego
+   * limitu robi się PRZED wywołaniem tej funkcji (patrz checkDailyBudget w route.ts).
+   */
+  usageLogging?: {
+    userId: string;
+    supabase: SupabaseClient;
+    endpoint: string;
+  };
 };
 
 /**
@@ -108,6 +120,21 @@ export async function createChatStreamResponse(
     execute: async ({ writer }) => {
       let lastError: unknown;
 
+      async function logUsageIfNeeded(
+        modelId: string,
+        usage: { inputTokens?: number; outputTokens?: number } | undefined
+      ): Promise<void> {
+        if (!options.usageLogging || !usage) return;
+        await logApiUsage({
+          userId: options.usageLogging.userId,
+          supabase: options.usageLogging.supabase,
+          endpoint: options.usageLogging.endpoint,
+          model: modelId,
+          tokensInput: usage.inputTokens ?? 0,
+          tokensOutput: usage.outputTokens ?? 0,
+        });
+      }
+
       for (const modelId of chain) {
         const result = streamText({
           model: google(modelId),
@@ -143,6 +170,7 @@ export async function createChatStreamResponse(
         const buffer: unknown[] = [];
         let streaming = false;
         let assistantText = "";
+        let usage: { inputTokens?: number; outputTokens?: number } | undefined;
 
         try {
           for await (const part of result.fullStream) {
@@ -152,6 +180,10 @@ export async function createChatStreamResponse(
 
             if (part.type === "text-delta") {
               assistantText += part.text;
+            }
+
+            if (part.type === "finish") {
+              usage = part.totalUsage;
             }
 
             const chunk = toUIMessageChunk(part);
@@ -182,11 +214,13 @@ export async function createChatStreamResponse(
             } else {
               for (const b of buffer) writer.write(b as never);
             }
+            await logUsageIfNeeded(modelId, usage);
             return; // sukces
           }
 
           // Odpowiedź bez tokenów tekstu, ale bez błędu — dokończ, co w buforze
           if (!streaming) for (const b of buffer) writer.write(b as never);
+          await logUsageIfNeeded(modelId, usage);
           return; // sukces
         } catch (error) {
           lastError = error;

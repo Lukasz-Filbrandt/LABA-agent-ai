@@ -5,6 +5,7 @@ import { createProfileTools, type CalendarEvent } from "@/app/lib/user-profile-t
 import { supabaseForRequest } from "@/app/lib/supabase-server";
 import { validateInput, sanitizeText } from "@/app/lib/input-guard";
 import { checkAndLogMessage } from "@/app/lib/rate-limit";
+import { checkDailyBudget } from "@/app/lib/token-budget";
 import type { UIMessage } from "ai";
 
 // Domyślny limit Vercela (10s) jest za krótki dla wieloetapowych zadań
@@ -175,6 +176,14 @@ export async function POST(req: Request) {
     }
   }
 
+  // 4) Budżet tokenów — 10k tokenów/dzień per user (patrz W3_BUDZET.md)
+  if (userId) {
+    const budget = await checkDailyBudget(userId, supabase);
+    if (!budget.ok) {
+      return createStaticTextResponse(budget.message);
+    }
+  }
+
   const personalization = await buildPersonalization(userId, supabase);
   const { saveUserName, saveUserPreference, saveEvent, getEvents } = createProfileTools(
     userId ?? null,
@@ -192,6 +201,7 @@ export async function POST(req: Request) {
       alwaysActiveTools: { saveUserName, saveUserPreference, saveEvent, getEvents },
       maxSteps: 3,
       filterOutput: true,
+      usageLogging: userId ? { userId, supabase, endpoint: "/api/chat" } : undefined,
     }
   );
 }
