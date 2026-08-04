@@ -4,7 +4,7 @@ import { readWebPage } from "@/app/lib/tools";
 import { createProfileTools, type CalendarEvent } from "@/app/lib/user-profile-tools";
 import { supabaseForRequest } from "@/app/lib/supabase-server";
 import { validateInput, sanitizeText } from "@/app/lib/input-guard";
-import { checkAndLogMessage } from "@/app/lib/rate-limit";
+import { checkAndLogMessage, logBlockedMessage } from "@/app/lib/rate-limit";
 import { checkDailyBudget } from "@/app/lib/token-budget";
 import type { UIMessage } from "ai";
 
@@ -157,16 +157,18 @@ export async function POST(req: Request) {
     model = "flash",
   }: { messages: UIMessage[]; model?: string } = await req.json();
 
+  const { supabase, user } = await supabaseForRequest(req);
+  const userId = user?.id;
+
   // 1) Walidacja inputu — długość + blacklista prób prompt injection (patrz W2_OBRONA.md)
   const userText = extractLastUserText(messages);
   const validation = validateInput(userText);
   if (!validation.ok) {
+    // Logujemy próbę do message_logs, żeby panel bezpieczeństwa mógł ją pokazać (patrz W4_PANEL_BEZPIECZENSTWA.md)
+    if (userId) await logBlockedMessage(userId, userText, validation.reason, supabase);
     return createStaticTextResponse(validation.reason);
   }
   const sanitizedMessages = sanitizeLastUserMessage(messages);
-
-  const { supabase, user } = await supabaseForRequest(req);
-  const userId = user?.id;
 
   // 3) Rate limiting — 50 wiadomości/h per user (AuthGate gwarantuje, że user jest zalogowany)
   if (userId) {

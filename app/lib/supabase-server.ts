@@ -22,3 +22,15 @@ export async function supabaseForRequest(
   const { data } = await supabase.auth.getUser(token);
   return { supabase, user: data.user };
 }
+
+/**
+ * Klient Supabase z kluczem serwisowym — omija RLS, widzi dane WSZYSTKICH userów.
+ * Używaj WYŁĄCZNIE server-side i dopiero po zweryfikowaniu uprawnień admina
+ * (patrz app/lib/admin-auth.ts) — nigdy nie przekazuj tego klienta ani klucza do przeglądarki.
+ */
+export function supabaseServiceRole(): SupabaseClient {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}

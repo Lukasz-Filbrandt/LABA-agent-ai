@@ -55,3 +55,25 @@ export async function checkAndLogMessage(
 
   return { ok: true };
 }
+
+const PREVIEW_LENGTH = 200;
+
+/**
+ * Loguje wiadomość zablokowaną przez walidację inputu (patrz app/lib/input-guard.ts) do
+ * message_logs, żeby panel bezpieczeństwa mógł ją wyświetlić (patrz W4_PANEL_BEZPIECZENSTWA.md).
+ */
+export async function logBlockedMessage(
+  userId: string,
+  message: string,
+  reason: string,
+  supabase: SupabaseClient
+): Promise<void> {
+  const { error } = await supabase.from("message_logs").insert({
+    user_id: userId,
+    message_length: message.length,
+    blocked: true,
+    block_reason: reason,
+    message_preview: message.slice(0, PREVIEW_LENGTH),
+  });
+  if (error) console.error("Błąd zapisu zablokowanej wiadomości:", error.message);
+}
