@@ -1,8 +1,10 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { createChatStreamResponse } from "@/app/lib/chat-stream";
+import { createChatStreamResponse, createStaticTextResponse } from "@/app/lib/chat-stream";
 import { readWebPage } from "@/app/lib/tools";
 import { createProfileTools, type CalendarEvent } from "@/app/lib/user-profile-tools";
 import { supabaseForRequest } from "@/app/lib/supabase-server";
+import { validateInput, sanitizeText } from "@/app/lib/input-guard";
+import { checkAndLogMessage } from "@/app/lib/rate-limit";
 import type { UIMessage } from "ai";
 
 // Domyślny limit Vercela (10s) jest za krótki dla wieloetapowych zadań
@@ -122,14 +124,56 @@ async function buildPersonalization(userId: string | undefined, supabase: Supaba
   );
 }
 
+/** Wyciąga tekst ostatniej wiadomości usera z jego części (message.parts) — patrz ChatInterface.tsx */
+function extractLastUserText(messages: UIMessage[]): string {
+  const last = [...messages].reverse().find((m) => m.role === "user");
+  if (!last) return "";
+  return (last.parts as { type: string; text?: string }[])
+    .filter((part) => part.type === "text")
+    .map((part) => part.text ?? "")
+    .join("");
+}
+
+/** Sanityzuje tekstowe części ostatniej wiadomości usera (usuwa znaki kontrolne / zero-width) */
+function sanitizeLastUserMessage(messages: UIMessage[]): UIMessage[] {
+  const lastIndex = messages.map((m) => m.role).lastIndexOf("user");
+  if (lastIndex === -1) return messages;
+
+  return messages.map((message, index) => {
+    if (index !== lastIndex) return message;
+    return {
+      ...message,
+      parts: (message.parts as { type: string; text?: string }[]).map((part) =>
+        part.type === "text" ? { ...part, text: sanitizeText(part.text ?? "") } : part
+      ),
+    };
+  }) as UIMessage[];
+}
+
 export async function POST(req: Request) {
   const {
     messages,
     model = "flash",
   }: { messages: UIMessage[]; model?: string } = await req.json();
 
+  // 1) Walidacja inputu — długość + blacklista prób prompt injection (patrz W2_OBRONA.md)
+  const userText = extractLastUserText(messages);
+  const validation = validateInput(userText);
+  if (!validation.ok) {
+    return createStaticTextResponse(validation.reason);
+  }
+  const sanitizedMessages = sanitizeLastUserMessage(messages);
+
   const { supabase, user } = await supabaseForRequest(req);
   const userId = user?.id;
+
+  // 3) Rate limiting — 50 wiadomości/h per user (AuthGate gwarantuje, że user jest zalogowany)
+  if (userId) {
+    const rateLimit = await checkAndLogMessage(userId, userText.length, supabase);
+    if (!rateLimit.ok) {
+      return createStaticTextResponse(rateLimit.message);
+    }
+  }
 
   const personalization = await buildPersonalization(userId, supabase);
   const { saveUserName, saveUserPreference, saveEvent, getEvents } = createProfileTools(
@@ -137,10 +181,17 @@ export async function POST(req: Request) {
     supabase
   );
 
-  return createChatStreamResponse(messages, model, SYSTEM_PROMPT + todayContext() + personalization, {
-    enableSearch: process.env.ENABLE_SEARCH_GROUNDING === "true",
-    tools: { readWebPage },
-    alwaysActiveTools: { saveUserName, saveUserPreference, saveEvent, getEvents },
-    maxSteps: 3,
-  });
+  // 2) Filtr outputu — filterOutput: true blokuje wyciek system promptu / danych technicznych
+  return createChatStreamResponse(
+    sanitizedMessages,
+    model,
+    SYSTEM_PROMPT + todayContext() + personalization,
+    {
+      enableSearch: process.env.ENABLE_SEARCH_GROUNDING === "true",
+      tools: { readWebPage },
+      alwaysActiveTools: { saveUserName, saveUserPreference, saveEvent, getEvents },
+      maxSteps: 3,
+      filterOutput: true,
+    }
+  );
 }

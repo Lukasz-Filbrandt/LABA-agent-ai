@@ -7,8 +7,10 @@ import {
   toUIMessageChunk,
   stepCountIs,
   type UIMessage,
+  type UIMessageStreamWriter,
   type ToolSet,
 } from "ai";
+import { filterModelOutput } from "@/app/lib/output-guard";
 
 // Wybór modelu z interfejsu — najtańszy/darmowy model dla wszystkich trybów (patrz W0_KLUCZ_API.md)
 const MODEL_CHAINS: Record<string, string[]> = {
@@ -28,6 +30,26 @@ function toClientError(error: unknown): string {
   return message;
 }
 
+/** Wypisuje pojedynczy statyczny komunikat tekstowy jako kompletną wiadomość asystenta */
+function writeStaticText(writer: UIMessageStreamWriter, text: string): void {
+  const id = crypto.randomUUID();
+  writer.write({ type: "text-start", id });
+  writer.write({ type: "text-delta", id, delta: text });
+  writer.write({ type: "text-end", id });
+}
+
+/**
+ * Zwraca gotową Response z pojedynczym statycznym komunikatem tekstowym, w formacie strumienia
+ * UI message — używane, gdy odpowiedź jest blokowana PRZED wywołaniem modelu (walidacja inputu,
+ * rate limiting), żeby klient dostał normalną wiadomość asystenta zamiast błędu (patrz W2_OBRONA.md).
+ */
+export function createStaticTextResponse(text: string): Response {
+  const stream = createUIMessageStream({
+    execute: async ({ writer }) => writeStaticText(writer, text),
+  });
+  return createUIMessageStreamResponse({ stream });
+}
+
 export type ChatStreamOptions = {
   /** Dodatkowe narzędzia (function calling) dostępne dla modelu — WYŁĄCZONE w tym samym kroku co google_search (patrz niżej) */
   tools?: ToolSet;
@@ -42,6 +64,13 @@ export type ChatStreamOptions = {
   enableSearch?: boolean;
   /** Maksymalna liczba kroków (wywołanie narzędzia → wynik → ...) zanim model musi skończyć tekstem */
   maxSteps?: number;
+  /**
+   * Włącza filtrowanie wyjścia (patrz W2_OBRONA.md): odpowiedź jest buforowana w całości
+   * (bez live-streamingu tekstu do klienta) i po zakończeniu generowania sprawdzana pod kątem
+   * wycieku system promptu / danych technicznych — w razie wykrycia zastępowana bezpiecznym
+   * komunikatem. Domyślnie wyłączone, żeby nie zmieniać UX pozostałych endpointów.
+   */
+  filterOutput?: boolean;
 };
 
 /**
@@ -109,9 +138,11 @@ export async function createChatStreamResponse(
 
         // Buforuj fragmenty do pierwszego tokenu tekstu. Dzięki temu, jeśli
         // model padnie na starcie (np. limit), można przełączyć się na kolejny
-        // bez wysłania klientowi żadnych zdublowanych zdarzeń.
+        // bez wysłania klientowi żadnych zdublowanych zdarzeń. Przy filterOutput
+        // buforujemy całość (patrz niżej) — nic nie jest strumieniowane na żywo.
         const buffer: unknown[] = [];
         let streaming = false;
+        let assistantText = "";
 
         try {
           for await (const part of result.fullStream) {
@@ -119,8 +150,18 @@ export async function createChatStreamResponse(
               throw part.error ?? new Error("stream error");
             }
 
+            if (part.type === "text-delta") {
+              assistantText += part.text;
+            }
+
             const chunk = toUIMessageChunk(part);
             if (chunk === undefined) continue;
+
+            if (options.filterOutput) {
+              // Nic nie wysyłamy na żywo — całość jest sprawdzana dopiero po zakończeniu streamu
+              buffer.push(chunk);
+              continue;
+            }
 
             if (streaming) {
               writer.write(chunk);
@@ -132,6 +173,16 @@ export async function createChatStreamResponse(
                 buffer.length = 0;
               }
             }
+          }
+
+          if (options.filterOutput) {
+            const safeText = filterModelOutput(assistantText, systemPrompt);
+            if (safeText !== assistantText) {
+              writeStaticText(writer, safeText);
+            } else {
+              for (const b of buffer) writer.write(b as never);
+            }
+            return; // sukces
           }
 
           // Odpowiedź bez tokenów tekstu, ale bez błędu — dokończ, co w buforze
