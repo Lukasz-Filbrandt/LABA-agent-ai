@@ -25,6 +25,7 @@ const LINKS = [
   { href: "/report", label: "Raporty", icon: "📊" },
   { href: "/competitor", label: "Konkurencja", icon: "🏢" },
   { href: "/cv-maker", label: "CV Maker", icon: "🧾" },
+  { href: "/admin/dashboard", label: "Dashboard użycia", icon: "📊" },
   { href: "/admin/security", label: "Bezpieczeństwo", icon: "🛡️" },
 ];
 
