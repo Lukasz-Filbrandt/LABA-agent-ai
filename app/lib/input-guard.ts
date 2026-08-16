@@ -23,6 +23,14 @@ const BLOCKED_PATTERNS: RegExp[] = [
   /wszystkich (u.ytkownik[oó]w|user[oó]w)/i,
   /user[_ ]?id/i,
   /tabel. .{0,20}(user|profil)/i,
+
+  // Podszywanie się pod autorytet (social engineering) — użytkownik udaje admina/
+  // developera/support, żeby wymusić złamanie zasad lub ujawnienie danych
+  /jeste.{1,15} (administrator|adminem|developer|deweloper|tw[oó]rc|supportem|z zespo.u)/i,
+  /(w tryb(ie)?|prze..cz.{0,4} w tryb) (administra|debug|deweloper|test)/i,
+  /w celu weryfikacji/i,
+  /autoryzuj. si./i,
+  /mam (uprawnienia|dost.p) (administrac|specjaln)/i,
 ];
 
 // Znaki kontrolne (poza \n, \t) i niewidoczne spacje zero-width, którymi można maskować ataki
