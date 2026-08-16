@@ -2,25 +2,41 @@ import Link from "next/link";
 
 const FEATURES = [
   {
-    icon: "🧠",
-    title: "Pamięta Twoje rozmowy",
-    desc: "Kontynuuje wątek tam, gdzie skończyliście — bez powtarzania kontekstu za każdym razem.",
+    icon: "📊",
+    title: "PIT, VAT i ryczałt bez stresu",
+    desc: "Rozliczenia, terminy zaliczek i wybór formy opodatkowania — konkretna odpowiedź zamiast szukania po forach.",
   },
   {
-    icon: "📚",
-    title: "Zna dokumenty Twojej firmy",
-    desc: "Odpowiada na bazie wgranych plików i wiedzy, którą mu przekażesz — nie zgaduje.",
+    icon: "📄",
+    title: "Czyta Twoje dokumenty",
+    desc: "Wgraj faktury, umowy, PIT-y czy wyciągi — agent przeanalizuje je i odpowie na pytania z odwołaniem do źródła.",
+  },
+  {
+    icon: "✍️",
+    title: "Generuje pisma i dokumenty",
+    desc: "Czynny żal, wniosek o interpretację, odwołanie od decyzji, pismo do US — gotowy szkic w kilka sekund.",
+  },
+  {
+    icon: "🤝",
+    title: "Przygotuje i sprawdzi umowy",
+    desc: "Umowa B2B, o dzieło, zlecenie czy najmu — z omówieniem skutków podatkowych każdego zapisu.",
+  },
+  {
+    icon: "📋",
+    title: "CV i dokumenty zawodowe",
+    desc: "Profesjonalne CV, list motywacyjny i oferta usług — gotowe do pobrania w PDF.",
   },
   {
     icon: "🔐",
-    title: "Prywatne dane per user",
-    desc: "Twoje rozmowy i dokumenty widzisz tylko Ty. Zero mieszania danych między kontami.",
+    title: "Twoje dane zostają Twoje",
+    desc: "Dokumenty i rozmowy widzisz tylko Ty. Zero mieszania danych między kontami.",
   },
-  {
-    icon: "⚡",
-    title: "Pracuje 24/7 (cron jobs)",
-    desc: "Briefingi, raporty i zadania w tle — agent działa, nawet gdy nie masz otwartej karty.",
-  },
+];
+
+const TRIAL_POINTS = [
+  "Pełny dostęp do wszystkich funkcji przez 7 dni",
+  "Bez podawania karty kredytowej",
+  "Bez zobowiązań — rezygnujesz jednym kliknięciem",
 ];
 
 export default function LandingPage() {
@@ -31,8 +47,8 @@ export default function LandingPage() {
 
       <nav className="landing-nav">
         <span className="landing-brand">
-          <span className="icon-badge">⚡</span>
-          <span className="landing-brand-name">Nexus AI</span>
+          <span className="icon-badge">📊</span>
+          <span className="landing-brand-name">Nexus Podatki</span>
         </span>
         <Link href="/login" className="btn btn-ghost landing-nav-cta">
           Zaloguj się
@@ -40,19 +56,21 @@ export default function LandingPage() {
       </nav>
 
       <header className="landing-hero">
-        <span className="landing-badge">Prywatny Agent AI</span>
-        <h1 className="landing-title">Nexus AI</h1>
+        <span className="landing-badge">AI Doradca podatkowy</span>
+        <h1 className="landing-title">Twój doradca podatkowy 24/7</h1>
         <p className="landing-tagline">
-          Twój osobisty asystent AI z pamięcią i bazą wiedzy firmy — zawsze pod ręką, zawsze na bieżąco.
+          PIT, VAT, ryczałt i wybór formy opodatkowania. Czyta Twoje dokumenty, generuje pisma i umowy —
+          i tłumaczy wszystko po ludzku.
         </p>
         <div className="landing-cta-row">
           <Link href="/login" className="btn btn-primary landing-cta-primary">
-            🚀 Zacznij za darmo
+            🚀 Wypróbuj 7 dni za darmo
           </Link>
           <a href="#demo" className="btn btn-ghost landing-cta-secondary">
             Zobacz jak to działa
           </a>
         </div>
+        <p className="landing-hero-note">Bez karty kredytowej · Bez zobowiązań</p>
       </header>
 
       <section className="landing-features" aria-label="Funkcje">
@@ -72,10 +90,10 @@ export default function LandingPage() {
       <section id="demo" className="landing-demo" aria-label="Demo">
         <div className="landing-demo-copy">
           <span className="landing-badge">Zobacz w akcji</span>
-          <h2 className="landing-demo-title">Zapytaj o cennik → agent odpowiada z Twoich dokumentów</h2>
+          <h2 className="landing-demo-title">Wgraj fakturę → dostajesz konkretną odpowiedź</h2>
           <p className="landing-demo-desc">
-            Bez przekopywania folderów i maili. Wgraj dokumenty raz, a Nexus AI znajdzie odpowiedź za Ciebie —
-            z odwołaniem do źródła.
+            Bez przekopywania ustaw i interpretacji. Zadaj pytanie tak, jak zadałbyś je księgowemu — agent
+            odpowie merytorycznie i podpowie, co zrobić dalej.
           </p>
         </div>
 
@@ -84,18 +102,18 @@ export default function LandingPage() {
             <span className="landing-demo-dots">
               <i /> <i /> <i />
             </span>
-            <span className="landing-demo-titlebar-label">💬 Chat — Nexus AI</span>
+            <span className="landing-demo-titlebar-label">💬 Czat — Nexus Podatki</span>
           </div>
           <div className="landing-demo-body">
             <div className="landing-chat-bubble landing-chat-bubble--user">
-              Jaki mamy cennik dla planu Pro?
+              Prowadzę JDG na liniowym. Czy mogę wrzucić w koszty laptopa za 6 tys.?
             </div>
             <div className="landing-chat-bubble landing-chat-bubble--bot">
-              Zgodnie z <strong>cennik_2026.pdf</strong>: plan Pro kosztuje 149 zł/mies. i obejmuje nielimitowane
-              zapytania oraz priorytetowe wsparcie. 📄
+              Tak — przy cenie poniżej <strong>10 000 zł</strong> możesz zaliczyć laptopa jednorazowo do kosztów
+              w miesiącu zakupu, jeśli służy działalności. Przy użytku mieszanym bezpieczniej rozliczyć część. 💻
             </div>
             <div className="landing-chat-bubble landing-chat-bubble--user">
-              A czy jest zniżka roczna?
+              Przygotuj mi umowę B2B dla podwykonawcy
             </div>
             <div className="landing-chat-bubble landing-chat-bubble--bot landing-chat-bubble--typing">
               <span /> <span /> <span />
@@ -104,12 +122,38 @@ export default function LandingPage() {
         </div>
       </section>
 
+      <section className="landing-trial" aria-label="Okres próbny">
+        <div className="landing-trial-card">
+          <span className="landing-badge">7 dni za darmo</span>
+          <h2 className="landing-trial-title">Sprawdź, zanim zapłacisz</h2>
+          <p className="landing-trial-desc">
+            Przetestuj wszystko — analizę dokumentów, generowanie pism i umów, rozliczenia PIT i VAT.
+          </p>
+          <ul className="landing-trial-list">
+            {TRIAL_POINTS.map((point) => (
+              <li key={point}>
+                <span aria-hidden="true">✅</span> {point}
+              </li>
+            ))}
+          </ul>
+          <Link href="/login" className="btn btn-primary landing-cta-primary">
+            Zacznij 7-dniowy okres próbny
+          </Link>
+        </div>
+      </section>
+
       <section className="landing-cta-footer">
-        <h2 className="landing-cta-footer-title">Gotowy? Zacznij w 30 sekund.</h2>
+        <h2 className="landing-cta-footer-title">Masz pytanie podatkowe? Zadaj je teraz.</h2>
         <Link href="/login" className="btn btn-primary landing-cta-primary">
           Stwórz konto
         </Link>
-        <p className="landing-footer-note">Bez karty kredytowej. Anuluj w każdej chwili.</p>
+        <p className="landing-footer-note">
+          7 dni za darmo, bez karty i bez zobowiązań. Anuluj w każdej chwili.
+        </p>
+        <p className="landing-disclaimer">
+          Nexus Podatki wspiera w codziennych rozliczeniach, ale nie zastępuje wiążącej porady prawnej ani
+          indywidualnej interpretacji podatkowej.
+        </p>
       </section>
     </div>
   );

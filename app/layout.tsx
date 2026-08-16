@@ -8,19 +8,20 @@ const SITE_URL = "https://laba-agent-ai-theta.vercel.app";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: "Nexus AI — Twój osobisty asystent AI",
-  description: "Agent AI z pamięcią, bazą wiedzy firmy i automatyzacją (cron jobs). Prywatne dane per user.",
+  title: "Nexus Podatki — Twój doradca podatkowy AI",
+  description:
+    "PIT, VAT i ryczałt bez stresu. Czyta Twoje dokumenty, generuje pisma, umowy i CV. 7 dni za darmo, bez zobowiązań.",
   openGraph: {
-    title: "Nexus AI",
-    description: "Twój osobisty asystent AI z pamięcią i bazą wiedzy firmy.",
+    title: "Nexus Podatki",
+    description: "Doradca podatkowy AI 24/7 — rozliczenia, dokumenty i umowy. 7 dni za darmo.",
     images: ["/og-image.png"],
     type: "website",
     locale: "pl_PL",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Nexus AI",
-    description: "Twój osobisty asystent AI z pamięcią i bazą wiedzy firmy.",
+    title: "Nexus Podatki",
+    description: "Doradca podatkowy AI 24/7 — rozliczenia, dokumenty i umowy. 7 dni za darmo.",
     images: ["/og-image.png"],
   },
   icons: {
