@@ -13,6 +13,16 @@ const BLOCKED_PATTERNS: RegExp[] = [
   /wypisz (sw[oó]j |ca[łl]y )?(system )?prompt/i,
   /jaki jest (pe[łl]ny |ca[łl]y )?prompt/i,
   /udawaj[, ]+.e jeste.{1,2}/i,
+
+  // Kategoria 3 (lekcja_10/W1_RED_TEAMING.md) — próby wyciągnięcia kluczy/sekretów
+  // lub danych innych użytkowników (data exfiltration), a nie samego system promptu
+  /api.?key/i,
+  /klucz.{0,3}api/i,
+  /(sw[oó]j|swoje|twoje) (has[łl]o|token|sekret)/i,
+  /(rozmow|wiadomo.ci|dane).{0,15}innych (u.ytkownik|os[oó]b)/i,
+  /wszystkich (u.ytkownik[oó]w|user[oó]w)/i,
+  /user[_ ]?id/i,
+  /tabel. .{0,20}(user|profil)/i,
 ];
 
 // Znaki kontrolne (poza \n, \t) i niewidoczne spacje zero-width, którymi można maskować ataki
